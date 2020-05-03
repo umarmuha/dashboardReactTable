@@ -69,6 +69,7 @@ const EditableCell = ({
   return <input value={value} onChange={onChange} onBlur={onBlur} />;
 };
 
+// eslint-disable-next-line
 const IndeterminateCheckbox = React.forwardRef(
   ({ indeterminate, ...rest }, ref) => {
     const defaultRef = React.useRef();
@@ -137,17 +138,17 @@ function App({ columns, data, updateMyData }) {
             </div>
           )
         },
-        ...columns
+        ...columns,
 
-        // {
-        // 	id: "selection2",
-        // 	Header: () => <div>CheckIn/Checkout</div>,
-        // 	Cell: ({ row }) => (
-        // 		<div>
-        // 			<IndeterminateCheckbox {...row.getToggleRowSelectedProps()} />
-        // 		</div>
-        // 	),
-        // },
+        {
+          id: "selection2",
+          Header: () => <div>CheckIn/Checkout</div>,
+          Cell: ({ row }) => (
+            <div id={row.id}>
+              <IndeterminateCheckbox {...row.getToggleRowSelectedProps()} />
+            </div>
+          )
+        }
       ]);
     }
   );
@@ -187,7 +188,11 @@ function App({ columns, data, updateMyData }) {
                       <tr key={row.id} {...row.getRowProps()}>
                         {row.cells.map(cell => {
                           return (
-                            <td key={cell.id} {...cell.getCellProps()}>
+                            <td
+                              key={cell.id}
+                              id={cell.id}
+                              {...cell.getCellProps()}
+                            >
                               {cell.render("Cell")}
                             </td>
                           );
