@@ -257,7 +257,7 @@ function Tables() {
   };
 
   React.useEffect(() => {
-    fetch("http://localhost:3000/users")
+    fetch("http://localhost:3001/users")
       .then(res => res.json())
       .then(res =>
         setData(
