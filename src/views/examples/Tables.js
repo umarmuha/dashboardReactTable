@@ -15,7 +15,7 @@
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 */
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useTable, useRowSelect } from "react-table";
 // reactstrap components
 import {
@@ -70,36 +70,107 @@ const EditableCell = ({
 };
 
 // eslint-disable-next-line
-const IndeterminateCheckbox = React.forwardRef(
-  ({ indeterminate, ...rest }, ref) => {
-    const defaultRef = React.useRef();
-    const resolvedRef = ref || defaultRef;
-    const [value, setValue] = useState({ ...rest }.checked);
-    React.useEffect(() => {
-      resolvedRef.current.indeterminate = indeterminate;
-    }, [resolvedRef, indeterminate]);
+// const IndeterminateCheckbox = React.forwardRef(
+//   ({ indeterminate, ...rest }, ref) => {
+//     const defaultRef = React.useRef();
+//     const resolvedRef = ref || defaultRef;
+//     const [value, setValue] = useState({ ...rest }.checked);
+//     React.useEffect(() => {
+//       resolvedRef.current.indeterminate = indeterminate;
+//     }, [resolvedRef, indeterminate]);
 
-    const handleValue = () => {
-      if (value) setValue(false);
-      else setValue(true);
-    };
-    console.log(defaultRef);
-    return (
-      <>
-        <Button
-          type="checkbox"
-          ref={resolvedRef}
-          {...rest}
-          onClick={handleValue}
-          value={value}
-          style={{ backgroundColor: value ? "#fb6340" : "lightgreen" }}
-        >
-          {value ? "CheckedIn" : "Checkout"}
-        </Button>
-      </>
-    );
-  }
-);
+//     const handleValue = () => {
+//       const requestOptions = {
+//         method: "PATCH",
+//         body: JSON.stringify({ status: true }),
+//         headers: { "Content-Type": "application/json" }
+//       };
+//       fetch("http://localhost:3001/users", requestOptions)
+//         .then(response => response.json())
+//         .then(response => console.log(response));
+//       // if (value) setValue(false);
+//       // else setValue(true);
+//     };
+//     // console.log(defaultRef);
+//     return (
+//       <>
+//         <Button
+//           type="checkbox"
+//           ref={resolvedRef}
+//           {...rest}
+//           onClick={handleValue}
+//           value={value}
+//           style={{ backgroundColor: value ? "#fb6340" : "lightgreen" }}
+//         >
+//           {value ? "Check In" : "Check Out"}
+//         </Button>
+//       </>
+//     );
+//   }
+// );
+
+const CheckButton = row => {
+  const [checkButton, setcheckButton] = useState({ value: "" });
+
+  //Using ref to make useEffect NOT run the first render for the "PATCH" api call
+  const isFirstRun = useRef(true);
+
+  //Fetching checkButton data from the database, CheckIn or CheckOut
+  useEffect(() => {
+    fetch(`http://localhost:3001/users/${row.id}`)
+      .then(res => res.json())
+      .then(({ status }) => setcheckButton({ value: status }));
+  }, [row.id]);
+
+  //Updating the status property of the checkButton on external database
+  useEffect(() => {
+    if (isFirstRun.current) {
+      const requestOptions = {
+        method: "PATCH",
+        body: JSON.stringify({ status: checkButton.value }),
+        headers: { "Content-Type": "application/json" }
+      };
+
+      fetch(`http://localhost:3001/users/${row.id}`, requestOptions)
+        .then(response => response.json())
+        .then(response => console.log(response));
+
+      console.log("update fetch RowId:", row.id);
+      console.log("New Value:", checkButton.value);
+    } else {
+      isFirstRun.current = false;
+    }
+  }, [checkButton.value, row.id]);
+
+  //onClick function to switch the checkButton property
+  const handleClick = () => {
+    setcheckButton(prev => ({
+      value: prev.value === "CheckOut" ? "CheckIn" : "CheckOut"
+    }));
+
+    console.log("Old Value:", checkButton.value);
+  };
+
+  return (
+    <>
+      <Button
+        key={row.id}
+        id={row.id}
+        onClick={handleClick}
+        value={checkButton.value}
+        style={{
+          backgroundColor:
+            checkButton.value === "CheckOut" ? "lightgreen" : "#fb6340"
+        }}
+      >
+        {checkButton.value}
+      </Button>
+      <pre>
+        <code>{JSON.stringify(checkButton, null, 2)}</code>
+      </pre>
+    </>
+  );
+};
 
 function App({ columns, data, updateMyData }) {
   const {
@@ -133,25 +204,23 @@ function App({ columns, data, updateMyData }) {
           id: "selection",
           Header: () => <div>CheckIn/Checkout</div>,
           Cell: ({ row }) => (
-            <div>
-              <IndeterminateCheckbox {...row.getToggleRowSelectedProps()} />
-            </div>
+            <CheckButton {...row} />
+            // <div>
+            //   <IndeterminateCheckbox {...row.getToggleRowSelectedProps()} />
+            // </div>
           )
         },
-        ...columns,
+        ...columns
 
-        {
-          id: "selection2",
-          Header: () => <div>CheckIn/Checkout</div>,
-          Cell: ({ row }) => (
-            <div id={row.id}>
-              <IndeterminateCheckbox {...row.getToggleRowSelectedProps()} />
-            </div>
-          )
-        }
+        // {
+        //   id: "selection2",
+        //   Header: () => <div>CheckIn/Checkout</div>,
+        //   Cell: ({ row }) => <CheckButton {...row} />
+        // }
       ]);
     }
   );
+  // console.log(rows);
   return (
     <>
       <Header />
@@ -185,7 +254,7 @@ function App({ columns, data, updateMyData }) {
                   {rows.map((row, i) => {
                     prepareRow(row);
                     return (
-                      <tr key={row.id} {...row.getRowProps()}>
+                      <tr key={row.id} id={row.id} {...row.getRowProps()}>
                         {row.cells.map(cell => {
                           return (
                             <td
@@ -257,7 +326,7 @@ function Tables() {
   };
 
   React.useEffect(() => {
-    fetch("http://localhost:3000/users")
+    fetch("http://localhost:3001/users")
       .then(res => res.json())
       .then(res =>
         setData(
