@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
 import PrivateRoute from "./PrivateRoute";
-import AdminLayout from "./layouts/Admin.js";
+// import AdminLayout from "./layouts/Admin.js";
+import Admin from "./layouts/Admin.js";
 import AuthLayout from "./layouts/Auth.js";
 
 import { AuthContext } from "./context/auth";
@@ -19,7 +20,7 @@ const App = () => {
       <Router>
         <Switch>
           <Route exact path="/" render={props => <AuthLayout {...props} />} />
-          <Route path="/admin" render={props => <AdminLayout {...props} />} />
+          <PrivateRoute path="/admin" component={Admin} />
           <Route path="/auth" render={props => <AuthLayout {...props} />} />
           <Route
             path="/auth/register"

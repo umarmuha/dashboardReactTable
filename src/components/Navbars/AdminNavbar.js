@@ -15,8 +15,10 @@
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 */
-import React from "react";
-import { Link } from "react-router-dom";
+import React, { useState } from "react";
+import { Link, Redirect } from "react-router-dom";
+import { useAuth } from "../../context/auth";
+
 // reactstrap components
 import {
   DropdownMenu,
@@ -36,6 +38,18 @@ import {
 } from "reactstrap";
 
 const AdminNavbar = props => {
+  const { setAuthTokens } = useAuth();
+  const [isLoggedOut, setIsLoggedOut] = useState(false);
+
+  function logOut() {
+    setAuthTokens();
+    setIsLoggedOut(true);
+  }
+
+  if (isLoggedOut) {
+    return <Redirect to="/auth/login" />;
+  }
+
   return (
     <>
       <Navbar className="navbar-top navbar-dark" expand="md" id="navbar-main">
@@ -96,7 +110,7 @@ const AdminNavbar = props => {
                   <span>Support</span>
                 </DropdownItem> */}
                 <DropdownItem divider />
-                <DropdownItem id="logout-button" as="a" onClick={() => {}}>
+                <DropdownItem id="logout-button" as="a" onClick={logOut}>
                   {/* <i className="ni ni-user-run" /> */}
                   <i className="fas fa-sign-out-alt"></i>
                   Logout

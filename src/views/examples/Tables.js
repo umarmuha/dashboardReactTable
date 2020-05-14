@@ -111,6 +111,7 @@ const EditableCell = ({
 
 const CheckButton = row => {
   const [checkButton, setcheckButton] = useState({ value: "" });
+  const [initialLoadState, setInitialLoadState] = useState(false);
 
   //Using ref to make useEffect NOT run the first render for the "PATCH" api call
   const isFirstRun = useRef(false);
@@ -124,7 +125,7 @@ const CheckButton = row => {
 
   //Updating the status property of the checkButton on external database
   useEffect(() => {
-    if (isFirstRun.current) {
+    if (initialLoadState === true) {
       //Using PATCH call to only update the status property in the db
       const requestOptions = {
         method: "PATCH",
@@ -139,12 +140,14 @@ const CheckButton = row => {
       console.log("update fetch RowId:", row.id);
       console.log("New Value:", checkButton.value);
     } else {
-      isFirstRun.current = true;
+      return;
+      // isFirstRun.current = true;
     }
-  }, [checkButton.value, row.id]);
+  }, [checkButton.value, initialLoadState, row.id]);
 
   //onClick function to switch the checkButton property
   const handleClick = () => {
+    setInitialLoadState(true);
     setcheckButton(prev => ({
       value: prev.value === "CheckOut" ? "CheckIn" : "CheckOut"
     }));

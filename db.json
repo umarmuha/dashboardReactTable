@@ -75,7 +75,7 @@
     {
       "id": 3,
       "name": "Johnny Bravo",
-      "status": "CheckOut",
+      "status": "CheckIn",
       "username": "Karianne",
       "email": "Julianne.OConner@kory.org",
       "address": {
@@ -118,12 +118,12 @@
         "catchPhrase": "Multi-layered client-server neural-net",
         "bs": "harness real-time e-markets"
       },
-      "status": "CheckIn"
+      "status": "CheckOut"
     },
     {
       "id": 5,
       "name": "Ervin Howell",
-      "status": "CheckIn",
+      "status": "CheckOut",
       "username": "Antonette",
       "email": "Shanna@melissa.tv",
       "address": {
@@ -219,7 +219,7 @@
     {
       "id": 9,
       "name": "Ervin Howell",
-      "status": "CheckIn",
+      "status": "CheckOut",
       "username": "Antonette",
       "email": "Shanna@melissa.tv",
       "address": {
@@ -267,7 +267,7 @@
     {
       "id": 11,
       "name": "Johnny Bravo",
-      "status": "CheckIn",
+      "status": "CheckOut",
       "username": "Karianne",
       "email": "Julianne.OConner@kory.org",
       "address": {

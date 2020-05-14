@@ -53,9 +53,9 @@ const Login = () => {
     fetch(`http://localhost:1337/login`, requestOptions)
       .then(response => response.json())
       .then(response => {
-        console.log(response);
         setAuthTokens(response.token);
         setLoggedIn(true);
+        console.log(response);
         // setIsError(false);
       });
   }
@@ -79,7 +79,7 @@ const Login = () => {
   // }
 
   if (isLoggedIn === true) {
-    return <Redirect to="/admin" />;
+    return <Redirect to="/admin/tables" />;
   }
 
   return (
