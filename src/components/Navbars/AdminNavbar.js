@@ -15,7 +15,7 @@
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 */
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
 // reactstrap components
 import {
@@ -34,25 +34,8 @@ import {
   Container,
   Media
 } from "reactstrap";
-import { useOktaAuth } from "@okta/okta-react";
 
 const AdminNavbar = props => {
-  const { authState, authService } = useOktaAuth();
-  const [userInfo, setUserInfo] = useState(null);
-
-  const logout = async () => authService.logout("/auth/login");
-
-  useEffect(() => {
-    if (!authState.isAuthenticated) {
-      // When user isn't authenticated, forget any user info
-      setUserInfo(null);
-    } else {
-      authService.getUser().then(info => {
-        setUserInfo(info);
-      });
-    }
-  }, [authState, authService]); // Update if authState changes
-
   return (
     <>
       <Navbar className="navbar-top navbar-dark" expand="md" id="navbar-main">
@@ -86,11 +69,9 @@ const AdminNavbar = props => {
                     />
                   </span>
                   <Media className="ml-2 d-none d-lg-block">
-                    {userInfo && (
-                      <span className="mb-0 text-sm font-weight-bold">
-                        {userInfo.name}
-                      </span>
-                    )}
+                    <span className="mb-0 text-sm font-weight-bold">
+                      {"Hello"}
+                    </span>
                   </Media>
                 </Media>
               </DropdownToggle>
@@ -115,10 +96,10 @@ const AdminNavbar = props => {
                   <span>Support</span>
                 </DropdownItem> */}
                 <DropdownItem divider />
-                <DropdownItem id="logout-button" as="a" onClick={logout}>
+                <DropdownItem id="logout-button" as="a" onClick={() => {}}>
                   {/* <i className="ni ni-user-run" /> */}
                   <i className="fas fa-sign-out-alt"></i>
-                  {authState.isAuthenticated && <span>Logout</span>}
+                  Logout
                 </DropdownItem>
               </DropdownMenu>
             </UncontrolledDropdown>

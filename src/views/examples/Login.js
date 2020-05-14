@@ -15,37 +15,82 @@
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 */
-import React from "react";
-
+import React, { useState } from "react";
+import { Link, Redirect } from "react-router-dom";
+import axios from "axios";
+import { useAuth } from "../../context/auth";
 // reactstrap components
 import {
   Button,
   Card,
-  // CardHeader,
+  CardHeader,
   CardBody,
-  // FormGroup,
-  // Form,
-  // Input,
-  // InputGroupAddon,
-  // InputGroupText,
-  // InputGroup,
-  // Row,
+  FormGroup,
+  Form,
+  Input,
+  InputGroupAddon,
+  InputGroupText,
+  InputGroup,
+  Row,
   Col
 } from "reactstrap";
-import { useOktaAuth } from "@okta/okta-react";
 
 const Login = () => {
-  const { authState, authService } = useOktaAuth();
-  const login = () => authService.login("/");
+  const [isLoggedIn, setLoggedIn] = useState(false);
+  const [isError, setIsError] = useState(false);
+  const [userName, setUserName] = useState("");
+  const [password, setPassword] = useState("");
+  const { setAuthTokens } = useAuth();
+  // const referer = props.location.state.referer || "/";
+
+  function postLogin() {
+    const requestOptions = {
+      method: "POST",
+      body: JSON.stringify({ email: userName, password: password }),
+      headers: { "Content-Type": "application/json" }
+    };
+
+    fetch(`http://localhost:1337/login`, requestOptions)
+      .then(response => response.json())
+      .then(response => {
+        console.log(response);
+        setAuthTokens(response.token);
+        setLoggedIn(true);
+        // setIsError(false);
+      });
+  }
+  //   axios
+  //     .post("http://localhost:1337/login", {
+  //       email: userName,
+  //       password: password
+  //     })
+  //     .then(result => {
+  //       if (result.status === 200) {
+  //         setAuthTokens(result.data);
+  //         setLoggedIn(true);
+  //       } else {
+  //         setIsError(true);
+  //       }
+  //     })
+  //     .catch(e => {
+  //       setIsError(true);
+  //       console.log(e);
+  //     });
+  // }
+
+  if (isLoggedIn === true) {
+    return <Redirect to="/admin" />;
+  }
+
   return (
     <>
       <Col lg="5" md="7">
         <Card className="bg-secondary shadow border-0">
-          {/* <CardHeader className="bg-transparent pb-5">
+          <CardHeader className="bg-transparent pb-5">
             <div className="text-muted text-center mt-2 mb-3">
               <small>Sign in with</small>
             </div>
-            <div className="btn-wrapper text-center">
+            {/* <div className="btn-wrapper text-center">
               <Button
                 className="btn-neutral btn-icon"
                 color="default"
@@ -74,10 +119,10 @@ const Login = () => {
                 </span>
                 <span className="btn-inner--text">Google</span>
               </Button>
-            </div>
-          </CardHeader> */}
+            </div> */}
+          </CardHeader>
           <CardBody className="px-lg-5 py-lg-5">
-            {/* <div className="text-center text-muted mb-4">
+            <div className="text-center text-muted mb-4">
               <small>Or sign in with credentials</small>
             </div>
             <Form role="form">
@@ -90,8 +135,12 @@ const Login = () => {
                   </InputGroupAddon>
                   <Input
                     placeholder="Email"
-                    type="email"
-                    autoComplete="new-email"
+                    type="username"
+                    value={userName}
+                    onChange={e => {
+                      setUserName(e.target.value);
+                    }}
+                    // autoComplete="new-email"
                   />
                 </InputGroup>
               </FormGroup>
@@ -103,13 +152,17 @@ const Login = () => {
                     </InputGroupText>
                   </InputGroupAddon>
                   <Input
-                    placeholder="Password"
                     type="password"
-                    autoComplete="new-password"
+                    value={password}
+                    onChange={e => {
+                      setPassword(e.target.value);
+                    }}
+                    placeholder="Password"
+                    // autoComplete="new-password"
                   />
                 </InputGroup>
               </FormGroup>
-              <div className="custom-control custom-control-alternative custom-checkbox">
+              {/* <div className="custom-control custom-control-alternative custom-checkbox">
                 <input
                   className="custom-control-input"
                   id=" customCheckLogin"
@@ -122,24 +175,24 @@ const Login = () => {
                   <span className="text-muted">Remember me</span>
                 </label>
               </div> */}
-            <div className="text-center">
-              {authState.isPending && <div>Loading authentication...</div>}
-              {!authState.isAuthenticated && (
+              <div className="text-center">
                 <Button
                   className="my-4"
                   color="primary"
                   type="button"
-                  onClick={login}
+                  onClick={postLogin}
                 >
                   Log in
                 </Button>
-              )}
-            </div>
-            {/* </Form> */}
+              </div>
+              <Link to="/auth/register">
+                <small>Dont have an account? Click here to Sign Up</small>
+              </Link>
+            </Form>
           </CardBody>
         </Card>
-        {/* <Row className="mt-3">
-          <Col xs="6">
+        <Row className="mt-3">
+          {/* <Col xs="6">
             <a
               className="text-light"
               href="#pablo"
@@ -147,20 +200,23 @@ const Login = () => {
             >
               <small>Forgot password?</small>
             </a>
-          </Col>
-          <Col className="text-right" xs="6">
-            <a
+          </Col> */}
+          <Col className="text-left" xs="6">
+            {/* <a
               className="text-light"
               href="#pablo"
               onClick={e => e.preventDefault()}
-            >
-              <small>Create new account</small>
-            </a>
+            > */}
+            {/* </a> */}
           </Col>
-        </Row> */}
+          {isError && (
+            <small style={{ color: "red" }}>
+              The username or password provided were incorrect!
+            </small>
+          )}
+        </Row>
       </Col>
     </>
   );
 };
-
 export default Login;

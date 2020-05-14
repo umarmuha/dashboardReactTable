@@ -113,7 +113,7 @@ const CheckButton = row => {
   const [checkButton, setcheckButton] = useState({ value: "" });
 
   //Using ref to make useEffect NOT run the first render for the "PATCH" api call
-  const isFirstRun = useRef(true);
+  const isFirstRun = useRef(false);
 
   //Fetching checkButton data from the database, CheckIn or CheckOut
   useEffect(() => {
@@ -125,6 +125,7 @@ const CheckButton = row => {
   //Updating the status property of the checkButton on external database
   useEffect(() => {
     if (isFirstRun.current) {
+      //Using PATCH call to only update the status property in the db
       const requestOptions = {
         method: "PATCH",
         body: JSON.stringify({ status: checkButton.value }),
@@ -138,7 +139,7 @@ const CheckButton = row => {
       console.log("update fetch RowId:", row.id);
       console.log("New Value:", checkButton.value);
     } else {
-      isFirstRun.current = false;
+      isFirstRun.current = true;
     }
   }, [checkButton.value, row.id]);
 
@@ -211,12 +212,6 @@ function App({ columns, data, updateMyData }) {
           )
         },
         ...columns
-
-        // {
-        //   id: "selection2",
-        //   Header: () => <div>CheckIn/Checkout</div>,
-        //   Cell: ({ row }) => <CheckButton {...row} />
-        // }
       ]);
     }
   );
@@ -233,7 +228,6 @@ function App({ columns, data, updateMyData }) {
               <CardHeader className="border-0">
                 <h3 className="mb-0">Card tables</h3>
               </CardHeader>
-              {/* <Container fluid> */}
               <Table bordered hover responsive fluid {...getTableProps()}>
                 <thead>
                   {headerGroups.map(headerGroup => (
@@ -241,7 +235,6 @@ function App({ columns, data, updateMyData }) {
                       key={headerGroup.id}
                       {...headerGroup.getHeaderGroupProps()}
                     >
-                      {/* <th>CheckIn/Out</th> */}
                       {headerGroup.headers.map(column => (
                         <th key={column.id} {...column.getHeaderProps()}>
                           {column.render("Header")}
@@ -274,7 +267,6 @@ function App({ columns, data, updateMyData }) {
             </Card>
           </div>
         </Row>
-        {/* Dark table */}
       </Container>
     </>
   );
@@ -308,7 +300,9 @@ function Tables() {
     []
   );
 
-  const [data, setData] = React.useState([]);
+  const [data, setData] = React.useState(
+    [] || localStorage.getItem("tableData")
+  );
 
   const updateMyData = (rowIndex, columnId, value) => {
     setData(old =>
@@ -322,10 +316,13 @@ function Tables() {
         return row;
       })
     );
-    // console.log(rowIndex, columnId, value);
   };
 
   React.useEffect(() => {
+    localStorage.setItem("tableData", data);
+  }, [data]);
+
+  React.useMemo(() => {
     fetch("http://localhost:3001/users")
       .then(res => res.json())
       .then(res =>
