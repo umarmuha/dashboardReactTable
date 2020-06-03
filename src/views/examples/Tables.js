@@ -17,6 +17,10 @@
 */
 import React, { useState, useRef, useEffect } from "react";
 import { useTable, useRowSelect } from "react-table";
+import FadeIn from "react-fade-in";
+import Lottie from "react-lottie";
+import * as dotLoading from "../../components/Loading/dotLoading.json";
+
 // reactstrap components
 import {
   Badge,
@@ -39,7 +43,7 @@ import {
   UncontrolledTooltip
 } from "reactstrap";
 // core components
-import Header from "components/Headers/Header.js";
+import Header from "../../components/Headers/Header.js";
 
 const EditableCell = ({
   value: initialValue,
@@ -118,6 +122,7 @@ const CheckButton = row => {
 
   //Fetching checkButton data from the database, CheckIn or CheckOut
   useEffect(() => {
+    console.log(window.location.href);
     fetch(`http://localhost:3001/users/${row.id}`)
       .then(res => res.json())
       .then(({ status }) => setcheckButton({ value: status }));
@@ -176,7 +181,16 @@ const CheckButton = row => {
   );
 };
 
-function App({ columns, data, updateMyData }) {
+function App({ columns, data, updateMyData, loading }) {
+  const defaultOptions = {
+    loop: true,
+    autoplay: true,
+    animationData: dotLoading.default,
+    rendererSettings: {
+      preserveAspectRatio: "xMidYMid slice"
+    }
+  };
+
   const {
     rows,
     getTableProps,
@@ -231,42 +245,57 @@ function App({ columns, data, updateMyData }) {
               <CardHeader className="border-0">
                 <h3 className="mb-0">Card tables</h3>
               </CardHeader>
-              <Table bordered hover responsive fluid {...getTableProps()}>
-                <thead>
-                  {headerGroups.map(headerGroup => (
-                    <tr
-                      key={headerGroup.id}
-                      {...headerGroup.getHeaderGroupProps()}
-                    >
-                      {headerGroup.headers.map(column => (
-                        <th key={column.id} {...column.getHeaderProps()}>
-                          {column.render("Header")}
-                        </th>
-                      ))}
-                    </tr>
-                  ))}
-                </thead>
-                <tbody {...getTableBodyProps()}>
-                  {rows.map((row, i) => {
-                    prepareRow(row);
-                    return (
-                      <tr key={row.id} id={row.id} {...row.getRowProps()}>
-                        {row.cells.map(cell => {
-                          return (
-                            <td
-                              key={cell.id}
-                              id={cell.id}
-                              {...cell.getCellProps()}
-                            >
-                              {cell.render("Cell")}
-                            </td>
-                          );
-                        })}
+              {!loading.done ? (
+                <FadeIn>
+                  <Row className="d-flex justify-content-center align-items-center ">
+                    <div>
+                      <h1>Loading Data</h1>
+                      <Lottie
+                        options={defaultOptions}
+                        height={120}
+                        width={120}
+                      />
+                    </div>
+                  </Row>
+                </FadeIn>
+              ) : (
+                <Table bordered hover responsive fluid {...getTableProps()}>
+                  <thead>
+                    {headerGroups.map(headerGroup => (
+                      <tr
+                        key={headerGroup.id}
+                        {...headerGroup.getHeaderGroupProps()}
+                      >
+                        {headerGroup.headers.map(column => (
+                          <th key={column.id} {...column.getHeaderProps()}>
+                            {column.render("Header")}
+                          </th>
+                        ))}
                       </tr>
-                    );
-                  })}
-                </tbody>
-              </Table>
+                    ))}
+                  </thead>
+                  <tbody {...getTableBodyProps()}>
+                    {rows.map((row, i) => {
+                      prepareRow(row);
+                      return (
+                        <tr key={row.id} id={row.id} {...row.getRowProps()}>
+                          {row.cells.map(cell => {
+                            return (
+                              <td
+                                key={cell.id}
+                                id={cell.id}
+                                {...cell.getCellProps()}
+                              >
+                                {cell.render("Cell")}
+                              </td>
+                            );
+                          })}
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </Table>
+              )}
             </Card>
           </div>
         </Row>
@@ -306,6 +335,7 @@ function Tables() {
   const [data, setData] = React.useState(
     [] || localStorage.getItem("tableData")
   );
+  const [loading, setLoading] = useState({ done: undefined });
 
   const updateMyData = (rowIndex, columnId, value) => {
     setData(old =>
@@ -326,24 +356,32 @@ function Tables() {
   }, [data]);
 
   React.useMemo(() => {
-    fetch("http://localhost:3001/users")
-      .then(res => res.json())
-      .then(res =>
-        setData(
-          res.map(item => {
-            return {
-              name: item.name,
-              username: item.username,
-              email: item.email,
-              website: item.website
-            };
-          })
+    setTimeout(() => {
+      fetch("http://localhost:3001/users")
+        .then(res => res.json())
+        .then(res =>
+          setData(
+            res.map(item => {
+              return {
+                name: item.name,
+                username: item.username,
+                email: item.email,
+                website: item.website
+              };
+            })
+          )
         )
-      );
+        .then(setLoading({ done: true }));
+    }, 1000);
   }, []);
   return (
     <React.Fragment>
-      <App columns={columns} data={data} updateMyData={updateMyData} />
+      <App
+        columns={columns}
+        data={data}
+        updateMyData={updateMyData}
+        loading={loading}
+      />
     </React.Fragment>
   );
 }

@@ -43,21 +43,28 @@ const Login = () => {
   const { setAuthTokens } = useAuth();
   // const referer = props.location.state.referer || "/";
 
-  function postLogin() {
-    const requestOptions = {
-      method: "POST",
-      body: JSON.stringify({ email: userName, password: password }),
-      headers: { "Content-Type": "application/json" }
-    };
+  function postLogin(e) {
+    e.preventDefault();
+    e.stopPropagation();
 
-    fetch(`http://localhost:1337/login`, requestOptions)
-      .then(response => response.json())
-      .then(response => {
-        setAuthTokens(response.token);
-        setLoggedIn(true);
-        console.log(response);
-        // setIsError(false);
-      });
+    if (userName === "" || password === "") {
+      setIsError(true);
+      setLoggedIn(false);
+    } else {
+      const requestOptions = {
+        method: "POST",
+        body: JSON.stringify({ email: userName, password: password }),
+        headers: { "Content-Type": "application/json" }
+      };
+
+      fetch(`http://localhost:1337/login`, requestOptions)
+        .then(response => response.json())
+        .then(response => {
+          setAuthTokens(response.token);
+          setLoggedIn(true);
+          console.log(response);
+        });
+    }
   }
   //   axios
   //     .post("http://localhost:1337/login", {
@@ -179,8 +186,8 @@ const Login = () => {
                 <Button
                   className="my-4"
                   color="primary"
-                  type="button"
-                  onClick={postLogin}
+                  type="submit"
+                  onClick={e => postLogin(e)}
                 >
                   Log in
                 </Button>
